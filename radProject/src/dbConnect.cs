@@ -52,7 +52,7 @@ namespace radProject
             }
             return usersList;
         }
-        public static List<report> dbGetReport(List<string> usersID)
+        public static List<report> dbGetReport(List<string> usersID, DateTime dateFrom, DateTime dateTo)
         {
 
             using (var conn = new NpgsqlConnection(connString))
@@ -71,7 +71,9 @@ namespace radProject
                                                        "FROM employees, expenses, expenseReport " +
                                                        "WHERE employees.id = " + user +
                                                        "AND expenseReport.id_employee = " + user +
-                                                       "AND expenses.id = id_expense ", conn))
+                                                       "AND expenses.id = id_expense " +
+                                                       "AND DATE(expenseReport.date) > '" + dateFrom.Year + "-" + dateFrom.Month + "-" + dateFrom.Day + "'" +
+                                                       "AND DATE(expenseReport.date) < '" + dateTo.Year + "-" + dateTo.Month + "-" + dateTo.Day + "'", conn))
                     {
                         // формируем список работников со всеми данными с повторением рабоников
                         var reader = command.ExecuteReader();
@@ -101,6 +103,7 @@ namespace radProject
                         }
                     }
 
+                    // удаляем повторыне отчёты
                     bool flag = true;
                     for (int j = 0; j < report.Count; j++)
                         if (preReports[i].employeeName == report[j].employeeName)
